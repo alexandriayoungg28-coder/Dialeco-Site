@@ -11,7 +11,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       background: white;
     }
 
@@ -21,6 +21,7 @@
       flex-direction: column;
       align-items: center;
       gap: 20px;
+      padding: 20px;
     }
 
     .logo {
@@ -75,49 +76,6 @@
       cursor: not-allowed;
     }
 
-    .google-button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #1f1f1f;
-      background-color: #ffffff;
-      border: 2px solid #dadce0;
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-
-    .google-button:hover:not(:disabled) {
-      background-color: #f8f9fa;
-      border-color: #c6c6c6;
-    }
-
-    .google-button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .divider {
-      width: 100%;
-      text-align: center;
-      color: #6b7280;
-      font-size: 13px;
-      margin: -4px 0;
-    }
-
-    .google-icon {
-      display: inline-flex;
-      width: 20px;
-      height: 20px;
-      align-items: center;
-      justify-content: center;
-    }
-
     .error-message {
       color: #d32f2f;
       font-size: 14px;
@@ -125,6 +83,18 @@
       display: none;
       padding: 8px;
       background-color: #ffebee;
+      border-radius: 5px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .success-message {
+      color: #2e7d32;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+      padding: 8px;
+      background-color: #e8f5e9;
       border-radius: 5px;
       width: 100%;
       box-sizing: border-box;
@@ -148,22 +118,184 @@
       cursor: pointer;
       font-weight: 600;
     }
+
+    .forgot-password {
+      font-size: 13px;
+      color: #102E63;
+      cursor: pointer;
+      font-weight: 600;
+      align-self: flex-end;
+      margin-top: -12px;
+    }
+
+    .forgot-password:hover {
+      text-decoration: underline;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 12px;
+      color: #999;
+      font-size: 13px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #ccc;
+    }
+
+    .google-button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      background-color: white;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .google-button:hover:not(:disabled) {
+      background-color: #f8f8f8;
+      border-color: #102E63;
+    }
+
+    .google-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .google-button svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Verification pending overlay */
+    .verification-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: white;
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .verification-box {
+      width: 420px;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .verification-box h2 {
+      color: #102E63;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .verification-box p {
+      color: #333;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .verification-box .email-highlight {
+      color: #102E63;
+      font-weight: 700;
+    }
+
+    .resend-link {
+      color: #102E63;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 20px;
+      display: inline-block;
+    }
+
+    .resend-link:hover {
+      text-decoration: underline;
+    }
+
+    .resend-link.disabled {
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .back-to-login {
+      color: #666;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 16px;
+      display: inline-block;
+    }
+
+    .back-to-login:hover {
+      color: #102E63;
+      text-decoration: underline;
+    }
+
+    /* Forgot password view */
+    .forgot-view {
+      display: none;
+      width: 400px;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
+  <!-- Verification pending overlay -->
+  <div id="verificationOverlay" class="verification-overlay">
+    <div class="verification-box">
+      <div class="logo" style="font-size: 64px; margin-bottom: 10px;">
+        <span class="blue">Dialec</span><span class="green">o</span>
+      </div>
+      <h2>Check your email</h2>
+      <p>
+        We sent a verification link to<br/>
+        <span id="verifyEmailDisplay" class="email-highlight"></span>
+      </p>
+      <p style="font-size: 13px; color: #666;">
+        Click the link in the email to verify your account. Once verified, you can sign in.
+        <br/>Don't see it? Check your spam or junk folder.
+      </p>
+      <span id="resendVerification" class="resend-link" onclick="resendVerificationEmail()">Resend verification email</span>
+      <br/>
+      <span class="back-to-login" onclick="backToLogin()">Back to Sign In</span>
+    </div>
+  </div>
+
+  <!-- Main login container -->
+  <div class="login-container" id="loginView">
     <div class="logo">
       <span class="blue">Dialec</span><span class="green">o</span>
     </div>
 
     <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
 
     <label class="input-label" for="email">Email</label>
     <input type="email" id="email" class="input-box" placeholder="your@email.com" required />
 
     <label class="input-label" for="password">Password</label>
     <input type="password" id="password" class="input-box" placeholder="Enter password" required />
+
+    <span id="forgotPasswordLink" class="forgot-password" onclick="showForgotPassword()">Forgot password?</span>
 
     <div id="usernameField" style="display: none; width: 100%;">
       <label class="input-label" for="username">Username</label>
@@ -174,16 +306,14 @@
 
     <div class="divider">or</div>
 
-    <button class="google-button" id="googleButton" onclick="handleGoogleAuth()" type="button">
-      <span class="google-icon" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" focusable="false" role="img">
-          <path fill="#4285F4" d="M533.5 278.4c0-17.8-1.6-35-4.8-51.7H272v97.8h147.4c-6.4 34.8-25 64.4-53.4 84.2v69.9h86.1c50.5-46.6 81.4-115 81.4-200.2z"/>
-          <path fill="#34A853" d="M272 544.3c72.6 0 133.7-24.1 178.2-65.4l-86.1-69.9c-24 16.1-54.8 25.6-92.1 25.6-70.8 0-130.7-47.9-152.2-112.1H33.4v70.4C77 493.9 168.3 544.3 272 544.3z"/>
-          <path fill="#FBBC05" d="M119.8 325.1c-10.8-32.1-10.8-66.8 0-98.9V155.8H33.4c-36.8 73.7-36.8 161.5 0 235.2l86.4-65.9z"/>
-          <path fill="#EA4335" d="M272 107.7c39.5 0 75 13.6 102.9 40.3l77.1-77.1C405.7 24.6 344.6 0 272 0 168.3 0 77 50.4 33.4 126.7l86.4 70.4C141.3 155.6 201.2 107.7 272 107.7z"/>
-        </svg>
-      </span>
-      <span>Continue with Google</span>
+    <button class="google-button" id="googleButton" onclick="handleGoogleSignIn()">
+      <svg viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.27-4.74 3.27-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continue with Google
     </button>
 
     <div class="sign-up-link">
@@ -192,30 +322,60 @@
     </div>
   </div>
 
-  <script src="./firebaseConfig.js"></script>
+  <!-- Forgot password view -->
+  <div class="forgot-view" id="forgotView">
+    <div class="logo" style="font-size: 64px;">
+      <span class="blue">Dialec</span><span class="green">o</span>
+    </div>
+    <h2 style="color: #102E63; margin: 0;">Reset your password</h2>
+    <p style="color: #666; font-size: 14px; text-align: center; margin: 0;">
+      Enter your email and we'll send you a link to reset your password.
+    </p>
+
+    <div id="forgotError" class="error-message"></div>
+    <div id="forgotSuccess" class="success-message"></div>
+
+    <label class="input-label" for="forgotEmail">Email</label>
+    <input type="email" id="forgotEmail" class="input-box" placeholder="your@email.com" required />
+
+    <button class="sign-in-button" id="forgotButton" onclick="handleForgotPassword()">Send Reset Link</button>
+
+    <span class="back-to-login" onclick="showLoginView()">Back to Sign In</span>
+  </div>
+
+  <script src="./firebaseConfig.js?v=4"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-auth.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
 
     let isSignUpMode = false;
+    let pendingUser = null; // Store user credential for verification resend
 
-    async function registerUserProfile(token, email, username) {
-      return fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ email, username })
-      }).catch(err => {
-        console.warn('Backend registration failed (non-blocking):', err);
-      });
-    }
+    // Handle Google redirect result on page load
+    getRedirectResult(auth).then(async (result) => {
+      if (!result) return;
+      const user = result.user;
+      const token = await user.getIdToken();
+
+      localStorage.setItem('dialeco_token', token);
+      localStorage.setItem('dialeco_user', JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        username: user.displayName || user.email.split('@')[0]
+      }));
+
+      window.location.href = '/dashboard';
+    }).catch((error) => {
+      console.error('Google redirect error:', error);
+      if (error.code !== 'auth/popup-closed-by-user') {
+        showError('Google sign-in failed. Please try again.');
+      }
+    });
 
     // Make functions globally available
     window.toggleAuthMode = function() {
@@ -223,17 +383,23 @@
       const button = document.getElementById('authButton');
       const toggleText = document.getElementById('toggleText');
       const usernameField = document.getElementById('usernameField');
+      const forgotLink = document.getElementById('forgotPasswordLink');
       
       if (isSignUpMode) {
         button.textContent = 'Sign Up';
         toggleText.textContent = 'Already have an account?';
         usernameField.style.display = 'block';
+        forgotLink.style.display = 'none';
+        document.querySelector('.toggle-auth').textContent = 'Sign In Here';
       } else {
         button.textContent = 'Sign In';
         toggleText.textContent = "Don't have an account?";
         usernameField.style.display = 'none';
+        forgotLink.style.display = 'block';
+        document.querySelector('.toggle-auth').textContent = 'Sign Up Here';
       }
       hideError();
+      hideSuccess();
     };
 
     window.handleAuth = async function() {
@@ -268,28 +434,70 @@
             displayName: username
           });
 
-          // Try to send user data to backend (non-blocking)
+          // Get token and send verification email
           const token = await userCredential.user.getIdToken();
-          registerUserProfile(token, email, username);
 
-          // Store user data in localStorage
-          localStorage.setItem('dialeco_user', JSON.stringify({
-            uid: userCredential.user.uid,
-            email: userCredential.user.email,
-            username: username
-          }));
+          // Send verification email via Resend
+          try {
+            await fetch('/api/auth/send-verification', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            });
+          } catch (err) {
+            console.warn('Verification email failed (non-blocking):', err);
+          }
 
-          // Store token
-          localStorage.setItem('dialeco_token', token);
+          // Store pending user info for resend
+          pendingUser = { uid: userCredential.user.uid, email: email, token: token };
 
-          // Redirect to dashboard after short delay
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 500);
+          // Show verification overlay
+          document.getElementById('verifyEmailDisplay').textContent = email;
+          document.getElementById('verificationOverlay').style.display = 'flex';
+
+          // Sign out so they can't access the app until verified
+          await auth.signOut();
 
         } else {
           // Sign In
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+          // Check if email is verified
+          await userCredential.user.reload();
+          if (!userCredential.user.emailVerified) {
+            // Get token for resend capability
+            const token = await userCredential.user.getIdToken();
+            pendingUser = { uid: userCredential.user.uid, email: email, token: token };
+
+            // Auto-resend verification email
+            try {
+              const resendResp = await fetch('/api/auth/resend-verification', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              if (resendResp.ok) {
+                const resendData = await resendResp.json();
+                console.log('Resend verification response:', resendResp.status, resendData);
+              } else {
+                console.warn('Resend verification returned:', resendResp.status);
+              }
+            } catch (err) {
+              console.error('Auto-resend verification failed:', err);
+            }
+
+            document.getElementById('verifyEmailDisplay').textContent = email;
+            document.getElementById('verificationOverlay').style.display = 'flex';
+
+            await auth.signOut();
+            button.disabled = false;
+            button.textContent = 'Sign In';
+            return;
+          }
           
           // Get and store token
           const token = await userCredential.user.getIdToken();
@@ -302,7 +510,7 @@
 
           // Redirect to dashboard after short delay
           setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = '/dashboard';
           }, 500);
         }
 
@@ -322,6 +530,8 @@
           errorMessage = 'No account found with this email.';
         } else if (error.code === 'auth/wrong-password') {
           errorMessage = 'Incorrect password.';
+        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
+          errorMessage = 'Invalid email or password.';
         }
         
         showError(errorMessage);
@@ -330,46 +540,128 @@
       }
     };
 
-    window.handleGoogleAuth = async function() {
+    // Google SSO Sign In (using redirect for Safari compatibility)
+    window.handleGoogleSignIn = function() {
       const googleButton = document.getElementById('googleButton');
-      const previousLabel = googleButton.textContent;
-
       googleButton.disabled = true;
-      googleButton.textContent = 'Connecting to Google...';
+      googleButton.innerHTML = '<span>Redirecting to Google...</span>';
       hideError();
+      signInWithRedirect(auth, googleProvider);
+    };
+
+    // Resend verification email
+    window.resendVerificationEmail = async function() {
+      const resendLink = document.getElementById('resendVerification');
+      
+      if (!pendingUser || resendLink.classList.contains('disabled')) return;
+
+      resendLink.classList.add('disabled');
+      resendLink.textContent = 'Sending...';
 
       try {
-        const userCredential = await signInWithPopup(auth, googleProvider);
-        const user = userCredential.user;
-        const token = await user.getIdToken();
-        const username = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+        const response = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${pendingUser.token}`
+          }
+        });
 
-        localStorage.setItem('dialeco_token', token);
-        localStorage.setItem('dialeco_user', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          username
-        }));
-
-        if (user.email) {
-          registerUserProfile(token, user.email, username);
+        if (response.status === 429) {
+          resendLink.classList.remove('disabled');
+          resendLink.textContent = 'Too many requests. Wait a few minutes.';
+          return;
         }
 
-        window.location.href = 'dashboard.html';
-      } catch (error) {
-        console.error('Google authentication error:', error);
+        const data = await response.json();
 
-        let errorMessage = 'Google sign-in failed. Please try again.';
-        if (error.code === 'auth/popup-closed-by-user') {
-          errorMessage = 'Google sign-in was cancelled.';
-        } else if (error.code === 'auth/popup-blocked') {
-          errorMessage = 'Popup was blocked. Please allow popups and try again.';
+        if (data.success) {
+          resendLink.textContent = 'Email sent! Check your inbox.';
+          // Re-enable after 60 seconds
+          setTimeout(() => {
+            resendLink.classList.remove('disabled');
+            resendLink.textContent = 'Resend verification email';
+          }, 60000);
+        } else {
+          resendLink.classList.remove('disabled');
+          resendLink.textContent = 'Failed to send. Try again.';
         }
-
-        showError(errorMessage);
-        googleButton.disabled = false;
-        googleButton.textContent = previousLabel;
+      } catch (err) {
+        console.error('Resend error:', err);
+        resendLink.classList.remove('disabled');
+        resendLink.textContent = 'Failed to send. Try again.';
       }
+    };
+
+    // Back to login from verification overlay
+    window.backToLogin = function() {
+      document.getElementById('verificationOverlay').style.display = 'none';
+      pendingUser = null;
+      const button = document.getElementById('authButton');
+      button.disabled = false;
+      button.textContent = 'Sign In';
+      if (isSignUpMode) {
+        window.toggleAuthMode();
+      }
+    };
+
+    // Forgot password view
+    window.showForgotPassword = function() {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('forgotView').style.display = 'flex';
+    };
+
+    window.showLoginView = function() {
+      document.getElementById('forgotView').style.display = 'none';
+      document.getElementById('loginView').style.display = 'flex';
+      document.getElementById('forgotError').style.display = 'none';
+      document.getElementById('forgotSuccess').style.display = 'none';
+    };
+
+    window.handleForgotPassword = async function() {
+      const email = document.getElementById('forgotEmail').value.trim();
+      const button = document.getElementById('forgotButton');
+      const errorDiv = document.getElementById('forgotError');
+      const successDiv = document.getElementById('forgotSuccess');
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      if (!email) {
+        errorDiv.textContent = 'Please enter your email address';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Sending...';
+
+      try {
+        const response = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          successDiv.textContent = 'If an account with that email exists, a password reset link has been sent. Check your inbox.';
+          successDiv.style.display = 'block';
+        } else if (response.status === 429) {
+          errorDiv.textContent = 'Too many requests. Please wait a few minutes before trying again.';
+          errorDiv.style.display = 'block';
+        } else {
+          errorDiv.textContent = data.error || 'Failed to send reset email.';
+          errorDiv.style.display = 'block';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+      }
+
+      button.disabled = false;
+      button.textContent = 'Send Reset Link';
     };
 
     function showError(message) {
@@ -383,10 +675,20 @@
       errorDiv.style.display = 'none';
     }
 
+    function hideSuccess() {
+      const successDiv = document.getElementById('successMessage');
+      if (successDiv) successDiv.style.display = 'none';
+    }
+
     // Allow Enter key to submit
     document.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
-        handleAuth();
+        const forgotView = document.getElementById('forgotView');
+        if (forgotView.style.display === 'flex') {
+          handleForgotPassword();
+        } else {
+          handleAuth();
+        }
       }
     });
   </script>

@@ -290,7 +290,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="firebaseConfig.js"></script>
+  <script src="firebaseConfig.js?v=4"></script>
 
   <script>
     // Initialize Firebase
@@ -304,56 +304,50 @@
       console.error('Firebase initialization error:', error);
     }
 
+    // Track the signed-in user; auth.currentUser is null for a moment on page
+    // load even when a session exists, so wait for the auth state callback.
+    let signedInUser = null;
+    auth.onAuthStateChanged((user) => {
+      signedInUser = user;
+    });
+
     async function handleSubmit(event) {
       event.preventDefault();
-      
+
       // Check if user is logged in
-      const currentUser = auth.currentUser;
+      const currentUser = signedInUser || auth.currentUser;
       if (!currentUser) {
         alert('Please log in to submit the survey.');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
       }
-      
+
       // Collect form data
       const formData = new FormData(event.target);
       const responses = {};
       for (let [key, value] of formData.entries()) {
         responses[key] = value;
       }
-      
+
       try {
-        // Get user token
-        const token = await currentUser.getIdToken();
-        
-        // Send to server/Firestore
-        const response = await fetch('/api/survey', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ responses })
+        // Write straight to Firestore (no server needed on Firebase Hosting)
+        const docRef = await db.collection('surveys').add({
+          email: currentUser.email,
+          responses: responses,
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        const result = await response.json();
-        
-        if (result.success) {
-          console.log('✅ Survey submitted:', result.surveyId);
-          // Show thank you overlay
-          document.getElementById('thankYouOverlay').classList.add('show');
-        } else {
-          console.error('Survey submission failed:', result.error);
-          if (response.status === 401) {
-            alert('Your session has expired. Please log in again.');
-            window.location.href = 'login.html';
-          } else {
-            alert('Failed to submit survey. Please try again.');
-          }
-        }
+        console.log('✅ Survey submitted:', docRef.id);
+        // Show thank you overlay
+        document.getElementById('thankYouOverlay').classList.add('show');
       } catch (error) {
         console.error('Survey submission error:', error);
-        alert('Failed to submit survey. Please try again.');
+        if (error.code === 'permission-denied') {
+          alert('Your session has expired. Please log in again.');
+          window.location.href = '/login';
+        } else {
+          alert('Failed to submit survey. Please try again.');
+        }
       }
     }
   </script>
