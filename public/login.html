@@ -347,7 +347,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-auth.js";
 
     const app = initializeApp(window.firebaseConfig);
     const auth = getAuth(app);
@@ -434,24 +434,15 @@
             displayName: username
           });
 
-          // Get token and send verification email
-          const token = await userCredential.user.getIdToken();
-
-          // Send verification email via Resend
+          // Send verification email via Firebase Auth (must happen before signOut)
           try {
-            await fetch('/api/auth/send-verification', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            await sendEmailVerification(userCredential.user);
           } catch (err) {
             console.warn('Verification email failed (non-blocking):', err);
           }
 
           // Store pending user info for resend
-          pendingUser = { uid: userCredential.user.uid, email: email, token: token };
+          pendingUser = { uid: userCredential.user.uid, email: email, user: userCredential.user };
 
           // Show verification overlay
           document.getElementById('verifyEmailDisplay').textContent = email;
@@ -467,25 +458,12 @@
           // Check if email is verified
           await userCredential.user.reload();
           if (!userCredential.user.emailVerified) {
-            // Get token for resend capability
-            const token = await userCredential.user.getIdToken();
-            pendingUser = { uid: userCredential.user.uid, email: email, token: token };
+            pendingUser = { uid: userCredential.user.uid, email: email, user: userCredential.user };
 
-            // Auto-resend verification email
+            // Auto-resend verification email via Firebase Auth (before signOut)
             try {
-              const resendResp = await fetch('/api/auth/resend-verification', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                }
-              });
-              if (resendResp.ok) {
-                const resendData = await resendResp.json();
-                console.log('Resend verification response:', resendResp.status, resendData);
-              } else {
-                console.warn('Resend verification returned:', resendResp.status);
-              }
+              await sendEmailVerification(userCredential.user);
+              console.log('Verification email re-sent');
             } catch (err) {
               console.error('Auto-resend verification failed:', err);
             }
@@ -559,37 +537,22 @@
       resendLink.textContent = 'Sending...';
 
       try {
-        const response = await fetch('/api/auth/resend-verification', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${pendingUser.token}`
-          }
-        });
-
-        if (response.status === 429) {
+        await sendEmailVerification(pendingUser.user);
+        resendLink.textContent = 'Email sent! Check your inbox.';
+        // Re-enable after 60 seconds
+        setTimeout(() => {
           resendLink.classList.remove('disabled');
-          resendLink.textContent = 'Too many requests. Wait a few minutes.';
-          return;
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          resendLink.textContent = 'Email sent! Check your inbox.';
-          // Re-enable after 60 seconds
-          setTimeout(() => {
-            resendLink.classList.remove('disabled');
-            resendLink.textContent = 'Resend verification email';
-          }, 60000);
-        } else {
-          resendLink.classList.remove('disabled');
-          resendLink.textContent = 'Failed to send. Try again.';
-        }
+          resendLink.textContent = 'Resend verification email';
+        }, 60000);
       } catch (err) {
         console.error('Resend error:', err);
         resendLink.classList.remove('disabled');
-        resendLink.textContent = 'Failed to send. Try again.';
+        if (err.code === 'auth/too-many-requests') {
+          resendLink.textContent = 'Too many requests. Wait a few minutes.';
+        } else {
+          // The short-lived session behind the overlay has expired
+          resendLink.textContent = 'Sign in again to resend the email.';
+        }
       }
     };
 
@@ -637,27 +600,24 @@
       button.textContent = 'Sending...';
 
       try {
-        const response = await fetch('/api/auth/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
+        await sendPasswordResetEmail(auth, email);
+        successDiv.textContent = 'If an account with that email exists, a password reset link has been sent. Check your inbox.';
+        successDiv.style.display = 'block';
+      } catch (err) {
+        if (err.code === 'auth/user-not-found') {
+          // Same neutral message so the form does not reveal which emails have accounts
           successDiv.textContent = 'If an account with that email exists, a password reset link has been sent. Check your inbox.';
           successDiv.style.display = 'block';
-        } else if (response.status === 429) {
+        } else if (err.code === 'auth/invalid-email') {
+          errorDiv.textContent = 'Invalid email address.';
+          errorDiv.style.display = 'block';
+        } else if (err.code === 'auth/too-many-requests') {
           errorDiv.textContent = 'Too many requests. Please wait a few minutes before trying again.';
           errorDiv.style.display = 'block';
         } else {
-          errorDiv.textContent = data.error || 'Failed to send reset email.';
+          errorDiv.textContent = 'Failed to send reset email. Please try again.';
           errorDiv.style.display = 'block';
         }
-      } catch (err) {
-        errorDiv.textContent = 'Network error. Please try again.';
-        errorDiv.style.display = 'block';
       }
 
       button.disabled = false;
