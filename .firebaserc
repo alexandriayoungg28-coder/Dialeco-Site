@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "dialeco-d7b8f": {
+      "storage": {
+        "userAudio": [
+          "://appspot.com"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to validate audio file properties
+    function isValidAudioFile() {
+      // Limit file size to 50MB
+      return request.resource.size < 50 * 1024 * 1024 
+        && request.resource.contentType.matches('audio/.*');
+    }
+    
+    // Rules for user-specific audio recordings
+    match /users/{userId}/recordings/{audioFile} {
+      // Allow read only if authenticated user is the owner
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Allow write (create/update) only if:
+      // - User is authenticated
+      // - User is the owner of the path
+      // - File is a valid audio file
+      // - Filename matches the expected pattern (green_timestamp.mp4)
+      allow write: if isAuthenticated() 
+        && request.auth.uid == userId
+        && isValidAudioFile()
+        && audioFile.matches('green_[0-9]+\\.mp4');
+      
+      // Allow delete only if user is the owner
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Rules for email-based user recording folders used by the audio pod
+    match /user_recordings/{userFolder}/{audioFile} {
+      allow read: if isAuthenticated()
+        && userFolder == request.auth.token.email.split('@').join('_');
+
+      allow write: if isAuthenticated()
+        && userFolder == request.auth.token.email.split('@').join('_')
+        && isValidAudioFile()
+        && (audioFile.matches('green_.*\\.mp4') || audioFile.matches('sent_.*\\.m4a'));
+
+      allow delete: if isAuthenticated()
+        && userFolder == request.auth.token.email.split('@').join('_');
+    }
+    
+    // Deny all other access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

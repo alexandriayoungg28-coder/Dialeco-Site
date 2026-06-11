@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dialeco Homepage</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: white;
+      font-family: 'Avenir Next', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+    }
+
+    .logo-text {
+      font-size: 42px;
+      font-weight: 700;
+    }
+
+    .logo-blue {
+      color: #102E63;
+    }
+
+    .logo-green {
+      color: #62BD5D;
+    }
+
+    /* Change sign-in-button from a button style to a styled <a> */
+    .sign-in-button {
+      background-color: #102E63;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none; /* Remove underline */
+      display: inline-block;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .sign-in-button:hover {
+      background-color: #0d2450;
+    }
+
+    .main-content {
+      display: flex;
+      width: 100%;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .image-section {
+      flex: 1;
+      background-color: #f3f3f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 350px;
+      padding: 20px;
+    }
+
+    .image-section img {
+      max-width: 85%;
+      height: auto;
+    }
+
+    .green-section {
+      flex: 1;
+      background-color: #62BD5D;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 30px 16px;
+      color: white;
+      height: 350px;
+      margin-bottom: 40px;
+    }
+
+    .green-section .title {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .green-section .subtitle {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .green-section .description {
+      font-size: 18px;
+      font-weight: 400;
+      text-align: center;
+      max-width: 90%;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    .interested-section {
+      width: 100%;
+      background: #102E63;
+      padding: 30px 16px;
+      text-align: center;
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      text-transform: capitalize;
+      margin-top: auto;
+    }
+
+    .request-info {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .request-button {
+      background-color: #62BD5D;
+      color: #102E63;
+      font-size: 20px;
+      font-family: 'Avenir Next', sans-serif;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: default;
+      transition: background-color 0.3s ease;
+      text-align: center;
+      user-select: none;
+    }
+
+    .request-button:hover {
+      background-color: #55a950;
+    }
+
+    @media screen and (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .green-section, .image-section {
+        height: auto;
+      }
+
+      .logo-text {
+        font-size: 32px;
+      }
+
+      .green-section .subtitle {
+        font-size: 28px;
+      }
+
+      .green-section .description {
+        font-size: 16px;
+      }
+
+      .interested-section {
+        font-size: 22px;
+      }
+
+      .request-button {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <span class="logo-text logo-blue">Dialec</span><span class="logo-text logo-green">o</span>
+    </div>
+    <a href="login.html" class="sign-in-button">Sign In</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="image-section">
+      <img src="image/image.png.jpeg" alt="Language learning graphic" />
+    </div>
+    <div class="green-section">
+      <div class="title">Welcome</div>
+      <div class="subtitle">Language Activity</div>
+      <div class="description">
+        Thank you for your willingness to participate.
+      </div>
+    </div>
+  </div>
+
+  <!-- Interested Section -->
+  <div class="interested-section">
+    <div>Please Sign In to begin</div>
+  </div>
+
+  <!-- Request More Info Button -->
+  <div class="request-info">
+    <div class="request-button">Request More Info</div>
+  </div>
+</body>
+</html>
