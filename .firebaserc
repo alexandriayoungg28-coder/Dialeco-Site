@@ -1,13 +1,5 @@
 {
-  "projects": {},
-  "targets": {
-    "dialeco-d7b8f": {
-      "storage": {
-        "userAudio": [
-          "://appspot.com"
-        ]
-      }
-    }
-  },
-  "etags": {}
+  "projects": {
+    "default": "dialeco-d7b8f"
+  }
 }
