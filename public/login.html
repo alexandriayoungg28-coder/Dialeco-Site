@@ -271,8 +271,10 @@
         <span id="verifyEmailDisplay" class="email-highlight"></span>
       </p>
       <p style="font-size: 13px; color: #666;">
-        Click the link in the email to verify your account. Once verified, you can sign in.
+        Click the link in the <strong>most recent</strong> email to verify your account. Once verified, you can sign in.
         <br/>Don't see it? Check your spam or junk folder.
+        <br/><br/>Already clicked a link and saw "expired or already used"? You're most likely
+        verified already &mdash; just go back and sign in.
       </p>
       <span id="resendVerification" class="resend-link" onclick="resendVerificationEmail()">Resend verification email</span>
       <br/>
@@ -447,9 +449,7 @@
           // Show verification overlay
           document.getElementById('verifyEmailDisplay').textContent = email;
           document.getElementById('verificationOverlay').style.display = 'flex';
-
-          // Sign out so they can't access the app until verified
-          await auth.signOut();
+          // Sign-out happens in backToLogin() so the resend button still works
 
         } else {
           // Sign In
@@ -458,20 +458,15 @@
           // Check if email is verified
           await userCredential.user.reload();
           if (!userCredential.user.emailVerified) {
+            // Do NOT auto-resend here: every new email invalidates the links in
+            // all previous ones, which is how students end up clicking dead links.
+            // They can use the explicit resend button on the overlay if needed.
             pendingUser = { uid: userCredential.user.uid, email: email, user: userCredential.user };
-
-            // Auto-resend verification email via Firebase Auth (before signOut)
-            try {
-              await sendEmailVerification(userCredential.user);
-              console.log('Verification email re-sent');
-            } catch (err) {
-              console.error('Auto-resend verification failed:', err);
-            }
 
             document.getElementById('verifyEmailDisplay').textContent = email;
             document.getElementById('verificationOverlay').style.display = 'flex';
 
-            await auth.signOut();
+            // Sign-out happens in backToLogin() so the resend button still works
             button.disabled = false;
             button.textContent = 'Sign In';
             return;
@@ -560,6 +555,7 @@
     window.backToLogin = function() {
       document.getElementById('verificationOverlay').style.display = 'none';
       pendingUser = null;
+      auth.signOut().catch(() => {});
       const button = document.getElementById('authButton');
       button.disabled = false;
       button.textContent = 'Sign In';
