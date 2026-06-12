@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dialeco – Account</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+      background: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      padding: 40px 30px;
+    }
+
+    .logo {
+      font-size: 56px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .logo .blue { color: #102E63; }
+    .logo .green { color: #62BD5D; }
+
+    h1 {
+      font-size: 24px;
+      color: #102E63;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 22px;
+      padding: 13px 36px;
+      font-size: 16px;
+      font-family: inherit;
+      font-weight: 600;
+      color: white;
+      background-color: #102E63;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    .btn:hover:not(:disabled) { background-color: #0d2450; }
+    .btn:disabled { opacity: 0.6; cursor: default; }
+
+    .input {
+      width: 100%;
+      padding: 13px 14px;
+      margin-top: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    .input:focus { outline: none; border-color: #102E63; }
+
+    .error-box {
+      margin-top: 14px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #d32f2f;
+      background-color: #ffebee;
+      border-radius: 5px;
+      display: none;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #777;
+      margin-top: 18px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      margin: 24px auto;
+      border: 4px solid #e3e8f0;
+      border-top-color: #102E63;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .state { display: none; }
+    .state.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><span class="blue">Dialec</span><span class="green">o</span></div>
+
+    <!-- Working -->
+    <div class="state active" id="stateLoading">
+      <div class="spinner"></div>
+      <p>One moment&hellip;</p>
+    </div>
+
+    <!-- Email verified -->
+    <div class="state" id="stateVerified">
+      <span class="icon">&#9989;</span>
+      <h1>Your email is verified!</h1>
+      <p>Your account is ready to use.</p>
+      <a class="btn" href="/login">Sign In</a>
+    </div>
+
+    <!-- Link used or expired (most common confusion) -->
+    <div class="state" id="stateUsedLink">
+      <span class="icon">&#128077;</span>
+      <h1>This link was already used</h1>
+      <p>Good news: that usually means your email is <strong>already verified</strong>, either by an earlier click or by your school's email scanner.</p>
+      <p>Just sign in with your email and password.</p>
+      <a class="btn" href="/login">Sign In</a>
+      <p class="hint">Can't sign in? Use the newest email we sent you, or request a fresh link from the sign-in page.</p>
+    </div>
+
+    <!-- Password reset form -->
+    <div class="state" id="stateReset">
+      <h1>Choose a new password</h1>
+      <p id="resetEmailLine"></p>
+      <input class="input" type="password" id="newPassword" placeholder="New password (6+ characters)">
+      <input class="input" type="password" id="confirmPassword" placeholder="Confirm new password">
+      <div class="error-box" id="resetError"></div>
+      <button class="btn" id="resetButton" onclick="submitNewPassword()">Save Password</button>
+    </div>
+
+    <!-- Password reset done -->
+    <div class="state" id="stateResetDone">
+      <span class="icon">&#9989;</span>
+      <h1>Password updated!</h1>
+      <p>You can now sign in with your new password.</p>
+      <a class="btn" href="/login">Sign In</a>
+    </div>
+
+    <!-- Reset link dead -->
+    <div class="state" id="stateResetDead">
+      <span class="icon">&#9203;</span>
+      <h1>This reset link is no longer valid</h1>
+      <p>It may have expired or already been used. Request a new one from the sign-in page (use the newest email you receive).</p>
+      <a class="btn" href="/login">Back to Sign In</a>
+    </div>
+
+    <!-- Anything unexpected -->
+    <div class="state" id="stateFallback">
+      <h1>Something went wrong</h1>
+      <p>This link doesn't look right. Head back to the sign-in page and try again from there.</p>
+      <a class="btn" href="/login">Back to Sign In</a>
+    </div>
+  </div>
+
+  <script src="/firebaseConfig.js?v=4"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-app.js";
+    import { getAuth, applyActionCode, verifyPasswordResetCode, confirmPasswordReset }
+      from "https://www.gstatic.com/firebasejs/10.2.0/firebase-auth.js";
+
+    const app = initializeApp(window.firebaseConfig);
+    const auth = getAuth(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
+
+    function show(id) {
+      document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    async function run() {
+      if (!mode || !oobCode) { show('stateFallback'); return; }
+
+      if (mode === 'verifyEmail') {
+        try {
+          await applyActionCode(auth, oobCode);
+          show('stateVerified');
+        } catch (e) {
+          // expired-action-code / invalid-action-code: link consumed or superseded.
+          // For this app that almost always means the account is already verified.
+          show('stateUsedLink');
+        }
+        return;
+      }
+
+      if (mode === 'resetPassword') {
+        try {
+          const email = await verifyPasswordResetCode(auth, oobCode);
+          document.getElementById('resetEmailLine').textContent = 'for ' + email;
+          show('stateReset');
+        } catch (e) {
+          show('stateResetDead');
+        }
+        return;
+      }
+
+      // Other modes (recoverEmail etc.) are not used by this site
+      show('stateFallback');
+    }
+
+    window.submitNewPassword = async function() {
+      const pw = document.getElementById('newPassword').value;
+      const pw2 = document.getElementById('confirmPassword').value;
+      const err = document.getElementById('resetError');
+      const btn = document.getElementById('resetButton');
+      err.style.display = 'none';
+
+      if (pw.length < 6) {
+        err.textContent = 'Password must be at least 6 characters.';
+        err.style.display = 'block';
+        return;
+      }
+      if (pw !== pw2) {
+        err.textContent = 'Passwords do not match.';
+        err.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        await confirmPasswordReset(auth, oobCode, pw);
+        show('stateResetDone');
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Save Password';
+        if (e.code === 'auth/weak-password') {
+          err.textContent = 'That password is too weak. Try a longer one.';
+        } else {
+          err.textContent = 'This link is no longer valid. Request a new reset email from the sign-in page.';
+        }
+        err.style.display = 'block';
+      }
+    };
+
+    run();
+  </script>
+</body>
+</html>
